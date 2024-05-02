@@ -16,8 +16,18 @@ app.get("/customers", async (req, res) => {
   try {
     const cust = await da.getCustomers();
     res.send(cust);
-  } catch(e) {
-    console.log(e);
-    return[null, e.message];
+  } catch(err) {
+    console.log(err);
+    return[null, err.message];
   }
+});
+
+app.get("/reset", async (req, res) => {
+  const [result, err] = await da.resetCustomers();
+  if(result){
+      res.send(result);
+  }else{
+      res.status(500);
+      res.send(err);
+  }   
 });
