@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path'); 
 const da = require("./data-access");
 const bodyParser = require('body-parser');
+const checkApiKey = require("./api-key").checkApiKey;
 
 const app = express();
 const port = 4000;
@@ -14,7 +15,7 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port} using a static dir ${publicDir}`);
 });
 
-app.get("/customers", async (req, res) => {
+app.get("/customers", checkApiKey, async (req, res) => {
   try {
     const cust = await da.getCustomers();
     res.send(cust);
@@ -24,7 +25,7 @@ app.get("/customers", async (req, res) => {
   }
 });
 
-app.get("/reset", async (req, res) => {
+app.get("/reset", checkApiKey, async (req, res) => {
   const [result, err] = await da.resetCustomers();
   if(result){
       res.send(result);
