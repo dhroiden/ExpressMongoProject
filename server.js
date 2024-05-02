@@ -15,6 +15,29 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port} using a static dir ${publicDir}`);
 });
 
+app.get("/customers/find/", checkApiKey, async (req, res) => {
+    let query = {};
+    if (req.query.id > -1) {
+        query.id = +req.query.id;
+    } else if (req.query.email) {
+        query.email = req.query.email;
+    } else if (req.query.password) {
+        query.password = req.query.password;
+    }
+    if (query) {
+        const [customers, err] = await da.findCustomers(query);
+        if (customers) {
+            res.send(customers);
+        } else {
+            res.status(404);
+            res.send(err);
+        }
+    } else {
+        res.status(400);
+        res.send("query string is required");
+    }
+});
+
 app.get("/customers", checkApiKey, async (req, res) => {
   try {
     const cust = await da.getCustomers();
@@ -35,7 +58,7 @@ app.get("/reset", checkApiKey, async (req, res) => {
   }   
 });
 
-app.post('/customers', async (req, res) => {
+app.post('/customers', checkApiKey, async (req, res) => {
   const newCustomer = req.body;
   if (newCustomer === null) {
       res.status(400);
@@ -55,7 +78,7 @@ app.post('/customers', async (req, res) => {
   }
 });
 
-app.get("/customers/:id", async (req, res) => {
+app.get("/customers/:id",checkApiKey, async (req, res) => {
     const id = req.params.id;
     const [cust, err] = await da.getCustomerById(id);
     if(cust){
@@ -66,7 +89,7 @@ app.get("/customers/:id", async (req, res) => {
     }   
 });
 
-app.put('/customers/:id', async (req, res) => {
+app.put('/customers/:id', checkApiKey, async (req, res) => {
     const id = req.params.id;
     const updatedCustomer = req.body;
     if (updatedCustomer === null) {
@@ -85,7 +108,7 @@ app.put('/customers/:id', async (req, res) => {
     }
 });
 
-app.delete("/customers/:id", async (req, res) => {
+app.delete("/customers/:id", checkApiKey, async (req, res) => {
     const id = req.params.id;
     // return array [message, errMessage]
     const [message, errMessage] = await da.deleteCustomerById(id);
