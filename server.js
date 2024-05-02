@@ -13,6 +13,11 @@ app.listen(port, () => {
 });
 
 app.get("/customers", async (req, res) => {
-  const cust = await da.getCustomers();
-  res.send(cust);
+  try {
+    const cust = await da.getCustomers();
+    res.send(cust);
+  } catch(e) {
+    console.log(e);
+    return[null, e.message];
+  }
 });
