@@ -1,12 +1,14 @@
 const express = require('express');
 const path = require('path'); 
 const da = require("./data-access");
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = 4000;
 
 const publicDir = path.join(__dirname, 'public');
 app.use(express.static(publicDir));
+app.use(bodyParser.json());
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port} using a static dir ${publicDir}`);
@@ -30,4 +32,24 @@ app.get("/reset", async (req, res) => {
       res.status(500);
       res.send(err);
   }   
+});
+
+app.post('/customers', async (req, res) => {
+  const newCustomer = req.body;
+  if (newCustomer === null) {
+      res.status(400);
+      res.send("missing request body");
+  } else {
+      // return array format [status, id, errMessage]
+      const [status, id, errMessage] = await da.addCustomer(newCustomer);
+      if (status === "success") {
+          res.status(201);
+          let response = { ...newCustomer };
+          response["_id"] = id;
+          res.send(response);
+      } else {
+          res.status(400);
+          res.send(errMessage);
+      }
+  }
 });
